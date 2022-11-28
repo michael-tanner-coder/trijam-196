@@ -3,7 +3,6 @@
 // TODO: nice to have: start menu
 // TODO: nice to have: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
-// TODO: nice to have: trails, screenshake, easing, sound and music
 
 const GAME_W = 240;
 const GAME_H = 320;
@@ -246,9 +245,10 @@ const INPUTS = {
   d: false,
 
   // PAUSE/START/QUIT
-  enter: false,
+  Enter: false,
 };
 window.addEventListener("keydown", function (e) {
+  console.log(e);
   if (INPUTS[e.key] !== undefined) {
     INPUTS[e.key] = true;
     console.log(INPUTS);
@@ -271,13 +271,35 @@ p1_bricks = PLAYER_1_GRID.length;
 p2_bricks = PLAYER_2_GRID.length;
 
 pickDirection(BALL);
-const GAME_OBJECTS = [
+let GAME_OBJECTS = [
   PLAYER_1,
   PLAYER_2,
   BALL,
   ...PLAYER_1_GRID,
   ...PLAYER_2_GRID,
 ];
+
+const resetGame = () => {
+  GAME_OBJECTS.length = 0;
+
+  BALL.x = GAME_W / 2 - 4;
+  BALL.y = GAME_H / 2 - 4;
+
+  PLAYER_1.y = 100;
+  PLAYER_2.y = 200 + PLAYER_2.h;
+
+  PLAYER_1.x = GAME_W / 2 - PLAYER_1.w / 2;
+  PLAYER_2.x = GAME_W / 2 - PLAYER_1.w / 2;
+  GAME_OBJECTS = [PLAYER_1, PLAYER_2, BALL, ...PLAYER_1_GRID, ...PLAYER_2_GRID];
+
+  p1_bricks = PLAYER_1_GRID.length;
+  p2_bricks = PLAYER_2_GRID.length;
+
+  game_state = STATES.start;
+  start_timer = 4;
+
+  BALL.positions.length = 0;
+};
 
 // LOOP
 const update = (dt) => {
@@ -358,6 +380,10 @@ const update = (dt) => {
     return;
   }
   if (game_state === STATES.game_over) {
+    if (INPUTS.Enter) {
+      resetGame();
+      game_state = STATES.start;
+    }
     return;
   }
 };
@@ -383,7 +409,15 @@ const draw = () => {
 
   if (game_state === STATES.game_over) {
     context.fillStyle = "white";
-    context.fillText(winner, GAME_W / 2 - 4, GAME_H / 2 - 16);
+    let text_width = context.measureText(winner).width;
+    context.fillText(winner, GAME_W / 2 - text_width / 2, GAME_H / 2 - 16);
+    let reset_text = "PRESS SPACE TO RESET";
+    let reset_text_width = context.measureText(reset_text).width;
+    context.fillText(
+      reset_text,
+      GAME_W / 2 - reset_text_width / 2,
+      GAME_H / 2 + 16
+    );
   }
 
   // fx
