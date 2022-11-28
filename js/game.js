@@ -1,8 +1,5 @@
 // GAME CONCEPT: 2 player game of breakout: destory the other player's bricks!
 
-// TODO: brick collision
-// TODO: paddle collision
-// TODO: brick destruction
 // TODO: game states (start, in-game, win/lose, menu)
 // TODO: start menu
 // TODO: quit option?
@@ -103,37 +100,44 @@ const pickDirection = (obj) => {
 const gridLogic = (grid) => {
   grid.forEach((brick) => {
     if (collisionDetected(BALL, brick)) {
-      hitBrick(BALL, brick);
+      bounceBall(BALL, brick);
     }
   });
 };
 
-const hitBrick = (ball, brick) => {
+const bounceBall = (ball, other) => {
   // bounce collision
   let ball_center = { x: ball.x + ball.w / 2, y: ball.y + ball.y / 2 };
-  let brick_center = { x: brick.x + brick.w / 2, y: brick.y + brick.h / 2 };
+  let other_center = { x: other.x + other.w / 2, y: other.y + other.h / 2 };
 
   // left side
-  if (ball.x + ball.w < brick_center.x && ball.y + ball.h < brick.y + brick.h) {
+  if (ball.x + ball.w < other_center.x && ball.y + ball.h < other.y + other.h) {
     ball.dx *= -1;
   }
   // right side
-  if (ball.x > brick_center.x && ball.y + ball.h < brick.y + brick.h) {
+  if (ball.x > other_center.x && ball.y + ball.h < other.y + other.h) {
     ball.dx *= -1;
   }
 
   // front side
-  if (ball.y + ball.h > brick.y + brick.h && ball.x + ball.w < brick.x + brick.w) {
+  if (
+    ball.y + ball.h > other.y + other.h &&
+    ball.x + ball.w < other.x + other.w
+  ) {
     ball.dy *= -1;
   }
   // back side
-  if (ball.y + ball.h < brick.y + brick.h && ball.x + ball.w < brick.x + brick.w) {
+  if (
+    ball.y + ball.h < other.y + other.h &&
+    ball.x + ball.w < other.x + other.w
+  ) {
     ball.dy *= -1;
   }
 
-  // remove brick
-  let brick_idx = GAME_OBJECTS.indexOf(brick);
-  GAME_OBJECTS.splice(brick_idx, 1);
+  // remove other
+  if (other.type === "paddle") return;
+  let other_idx = GAME_OBJECTS.indexOf(other);
+  GAME_OBJECTS.splice(other_idx, 1);
 };
 
 function collisionDetected(obj_a, obj_b) {
@@ -201,6 +205,10 @@ const update = (dt) => {
     movePaddle(paddle);
 
     paddle.x += paddle.dx;
+
+    if (collisionDetected(BALL, paddle)) {
+      bounceBall(BALL, paddle);
+    }
   });
 
   // ball group
@@ -220,7 +228,7 @@ const update = (dt) => {
   // brick groups
   bricks.forEach((brick) => {
     if (collisionDetected(BALL, brick)) {
-      hitBrick(BALL, brick);
+      bounceBall(BALL, brick);
     }
   });
 };
