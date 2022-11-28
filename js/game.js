@@ -43,8 +43,9 @@ const BALL = {
   dx: 0,
   dy: 0,
   color: "white",
-  speed: 1,
+  speed: 0.1,
   type: "ball",
+  top_speed: 1,
 };
 const BRICK = {
   x: GAME_W / 2,
@@ -130,8 +131,8 @@ const movePaddle = (paddle) => {
 };
 
 const pickDirection = (obj) => {
-  let dy = Math.random() > 0.5 ? -1 * obj.speed : obj.speed;
-  let dx = Math.random() > 0.5 ? -1 * obj.speed : obj.speed;
+  let dy = Math.random() > 0.5 ? -1 : 1;
+  let dx = Math.random() > 0.5 ? -1 : 1;
   obj.dx = dx;
   obj.dy = dy;
 };
@@ -158,7 +159,13 @@ const bounceBall = (ball, other) => {
   }
 
   // remove other
-  if (other.type === "paddle") return;
+  if (other.type === "paddle") {
+    ball.top_speed += 0.1;
+    if (ball.top_speed > 2) {
+      ball.top_speed = 2;
+    }
+    return;
+  }
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
 
@@ -284,8 +291,8 @@ const update = (dt) => {
       ball.prev_x = ball.x;
       ball.prev_y = ball.y;
 
-      ball.x += ball.dx;
-      ball.y += ball.dy;
+      ball.x += ball.dx * ball.speed;
+      ball.y += ball.dy * ball.speed;
 
       // wall collision
       if (ball.x + ball.w > GAME_W || ball.x + ball.w < 0) {
@@ -294,6 +301,8 @@ const update = (dt) => {
       if (ball.y + ball.w > GAME_H || ball.y + ball.w < 0) {
         ball.dy *= -1;
       }
+
+      ball.speed = easing(ball.speed, ball.top_speed);
     });
 
     checkForWinner();
