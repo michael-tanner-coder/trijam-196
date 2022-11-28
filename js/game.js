@@ -1,6 +1,5 @@
 // GAME CONCEPT: 2 player game of breakout: destroy the other player's bricks!
 
-// TODO: game states (start, in-game, win/lose, menu)
 // TODO: start menu
 // TODO: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
@@ -55,6 +54,7 @@ const BRICK = {
   color: "red",
   speed: 0,
   type: "brick",
+  tag: "player1",
 };
 
 // PLAYERS
@@ -150,6 +150,10 @@ const bounceBall = (ball, other) => {
   if (other.type === "paddle") return;
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
+
+  //
+  if (other.tag === "player1") p1_bricks--;
+  if (other.tag === "player2") p2_bricks--;
 };
 
 function collisionDetected(obj_a, obj_b) {
@@ -159,6 +163,18 @@ function collisionDetected(obj_a, obj_b) {
     obj_a.y < obj_b.y + obj_b.h &&
     obj_a.y + obj_a.h > obj_b.y
   );
+}
+
+function checkForWinner() {
+  if (p1_bricks <= 0) {
+    winner = "P2 WINS";
+    game_state = STATES.game_over;
+  }
+
+  if (p2_bricks <= 0) {
+    winner = "P1 WINS";
+    game_state = STATES.game_over;
+  }
 }
 
 // INPUTS
@@ -180,7 +196,6 @@ window.addEventListener("keydown", function (e) {
     console.log(INPUTS);
   }
 });
-
 window.addEventListener("keyup", function (e) {
   if (INPUTS[e.key] !== undefined) {
     INPUTS[e.key] = false;
@@ -190,6 +205,11 @@ window.addEventListener("keyup", function (e) {
 
 const PLAYER_1_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, BRICK_H);
 const PLAYER_2_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, 224);
+PLAYER_2_GRID.forEach((brick) => {
+  brick.tag = "player2";
+});
+p1_bricks = PLAYER_1_GRID.length;
+p2_bricks = PLAYER_2_GRID.length;
 
 pickDirection(BALL);
 const GAME_OBJECTS = [
@@ -215,8 +235,6 @@ const update = (dt) => {
     // tick timer until the game is ready to start
 
     start_timer -= 0.02;
-
-    console.log(start_timer);
 
     if (start_timer <= 0) {
       game_state = STATES.in_game;
@@ -259,6 +277,8 @@ const update = (dt) => {
         bounceBall(BALL, brick);
       }
     });
+
+    checkForWinner();
     return;
   }
   if (game_state === STATES.game_over) {
@@ -280,6 +300,11 @@ const draw = () => {
   if (game_state === STATES.start) {
     context.fillStyle = "white";
     context.fillText(Math.floor(start_timer), GAME_W / 2 - 4, GAME_H / 2 - 16);
+  }
+
+  if (game_state === STATES.game_over) {
+    context.fillStyle = "white";
+    context.fillText(winner, GAME_W / 2 - 4, GAME_H / 2 - 16);
   }
 };
 

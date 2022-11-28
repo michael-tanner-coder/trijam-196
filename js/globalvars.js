@@ -9,3 +9,6 @@ var game_timer = 0;
 
 // game vars
 var start_timer = 4;
+var p1_bricks = 0;
+var p2_bricks = 0;
+var winner = "";
