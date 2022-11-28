@@ -1,12 +1,10 @@
 // GAME CONCEPT: 2 player game of breakout: destory the other player's bricks!
 
-// TODO: control paddle (left + right)
-// TODO: spawn ball with random direction
 // TODO: wall collision (all walls are solid)
 // TODO: brick collision
 // TODO: paddle collision
 // TODO: brick destruction
-// TODO: win/lose states
+// TODO: game states (start, in-game, win/lose, menu)
 // TODO: start menu
 // TODO: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
@@ -35,12 +33,14 @@ const PADDLE = {
   tag: "player1",
 };
 const BALL = {
-  x: GAME_W / 2,
-  y: 100,
+  x: GAME_W / 2 - 4,
+  y: GAME_H / 2 - 4,
   w: 8,
   h: 8,
+  dx: 0,
+  dy: 0,
   color: "white",
-  speed: 4,
+  speed: 1,
   type: "ball",
 };
 const BRICK = {
@@ -50,21 +50,16 @@ const BRICK = {
   h: BRICK_H,
   color: "red",
   speed: 0,
-  type: "ball",
+  type: "brick",
 };
 
-const INPUTS = {
-  // PLAYER 1
-  ArrowLeft: false,
-  ArrowRight: false,
+// PLAYERS
+const PLAYER_1 = JSON.parse(JSON.stringify(PADDLE));
+const PLAYER_2 = JSON.parse(JSON.stringify(PADDLE));
+PLAYER_2.tag = "player2";
 
-  // PLAYER 2
-  a: false,
-  d: false,
-
-  // PAUSE/START/QUIT
-  enter: false,
-};
+PLAYER_1.y = 100;
+PLAYER_2.y = 200 + PLAYER_2.h;
 
 // UTILS
 const genGrid = (brick, rows, cols, start_x = 0, start_y = 0) => {
@@ -99,7 +94,26 @@ const movePaddle = (paddle) => {
   }
 };
 
+const pickDirection = (obj) => {
+  let dy = Math.random() > 0.5 ? -1 * obj.speed : obj.speed;
+  let dx = Math.random() > 0.5 ? -1 * obj.speed : obj.speed;
+  obj.dx = dx;
+  obj.dy = dy;
+};
+
 // INPUTS
+const INPUTS = {
+  // PLAYER 1
+  ArrowLeft: false,
+  ArrowRight: false,
+
+  // PLAYER 2
+  a: false,
+  d: false,
+
+  // PAUSE/START/QUIT
+  enter: false,
+};
 window.addEventListener("keydown", function (e) {
   if (INPUTS[e.key] !== undefined) {
     INPUTS[e.key] = true;
@@ -117,7 +131,14 @@ window.addEventListener("keyup", function (e) {
 const PLAYER_1_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, BRICK_H);
 const PLAYER_2_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, 224);
 
-const GAME_OBJECTS = [PADDLE, BALL, ...PLAYER_1_GRID, ...PLAYER_2_GRID];
+pickDirection(BALL);
+const GAME_OBJECTS = [
+  PLAYER_1,
+  PLAYER_2,
+  BALL,
+  ...PLAYER_1_GRID,
+  ...PLAYER_2_GRID,
+];
 
 // LOOP
 const update = (dt) => {
@@ -128,7 +149,7 @@ const update = (dt) => {
   let balls = GAME_OBJECTS.filter((obj) => obj.type === "ball");
   let bricks = GAME_OBJECTS.filter((obj) => obj.type === "brick");
 
-  // player movement
+  // player group
   paddles.forEach((paddle) => {
     // PLAYER MOVEMENT
     paddle.dx = 0;
@@ -137,6 +158,15 @@ const update = (dt) => {
 
     paddle.x += paddle.dx;
   });
+
+  // ball group
+  balls.forEach((ball) => {
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+  });
+
+  // brick group
+  bricks.forEach((brick) => {});
 };
 
 const draw = () => {
