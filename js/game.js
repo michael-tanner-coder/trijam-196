@@ -42,10 +42,11 @@ const BALL = {
   h: 8,
   dx: 0,
   dy: 0,
-  color: "white",
+  color: "yellow",
   speed: 0.1,
   type: "ball",
   top_speed: 1,
+  positions: [],
 };
 const BRICK = {
   x: GAME_W / 2,
@@ -168,6 +169,13 @@ const bounceBall = (ball, other) => {
   }
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
+  poof(
+    other.x + other.w / 2,
+    other.y + other.h - other.h / 4,
+    other.color,
+    1,
+    false
+  );
 
   // reduce brick count
   if (other.tag === "player1" && other.type === "brick") p1_bricks--;
@@ -193,6 +201,38 @@ function checkForWinner() {
     winner = "P1 WINS";
     game_state = STATES.game_over;
   }
+}
+
+function clamp(num, min, max) {
+  if (num < min) return min;
+  if (num > max) return max;
+  return num;
+}
+
+function drawTrail(positions, obj) {
+  positions?.forEach((pos, i) => {
+    // ratio that moves toward one as we reach the end of the trail
+    // useful for gradually increasing size/alpha/etc
+    let ratio = (i + 1) / positions.length;
+
+    // keep height and width within range of the leading object's size
+    let w = clamp(ratio * obj.w, 1, obj.w);
+    let h = clamp(ratio * obj.h, 1, obj.h);
+
+    // center trail with leading object
+    let x = pos.x;
+    let y = pos.y;
+
+    x -= w / 2;
+    y -= h / 2;
+
+    x += obj.w / 2;
+    y += obj.h / 2;
+
+    // increase alpha as we get closer to the front of the trail
+    context.fillStyle = "rgba(255, 255, 255, " + ratio / 2 + ")";
+    context.fillRect(x, y, w, h);
+  });
 }
 
 // INPUTS
@@ -246,6 +286,9 @@ const update = (dt) => {
   let balls = GAME_OBJECTS.filter((obj) => obj.type === "ball");
   let bricks = GAME_OBJECTS.filter((obj) => obj.type === "brick");
 
+  // fx
+  particles.update();
+
   // GAME STATES
   if (game_state === STATES.menu) {
     return;
@@ -292,6 +335,11 @@ const update = (dt) => {
       ball.prev_x = ball.x;
       ball.prev_y = ball.y;
 
+      ball.positions.push({ x: ball.prev_x, y: ball.prev_y });
+      if (ball.positions.length > Math.floor(ball.top_speed * 10)) {
+        ball.positions.shift();
+      }
+
       ball.x += ball.dx * ball.speed;
       ball.y += ball.dy * ball.speed;
 
@@ -318,6 +366,9 @@ const draw = () => {
   context.fillStyle = "black";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
+  // render ball trail
+  drawTrail(BALL.positions, BALL);
+
   // render objects
   GAME_OBJECTS.forEach((obj) => {
     context.fillStyle = obj.color;
@@ -334,6 +385,9 @@ const draw = () => {
     context.fillStyle = "white";
     context.fillText(winner, GAME_W / 2 - 4, GAME_H / 2 - 16);
   }
+
+  // fx
+  particles.draw();
 
   // HUD
   context.fillStyle = "white";
