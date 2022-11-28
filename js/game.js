@@ -1,6 +1,5 @@
 // GAME CONCEPT: 2 player game of breakout: destory the other player's bricks!
 
-// TODO: wall collision (all walls are solid)
 // TODO: brick collision
 // TODO: paddle collision
 // TODO: brick destruction
@@ -163,6 +162,14 @@ const update = (dt) => {
   balls.forEach((ball) => {
     ball.x += ball.dx;
     ball.y += ball.dy;
+
+    // wall collision
+    if (ball.x + ball.w > GAME_W || ball.x + ball.w < 0) {
+      ball.dx *= -1;
+    }
+    if (ball.y + ball.w > GAME_H || ball.y + ball.w < 0) {
+      ball.dy *= -1;
+    }
   });
 
   // brick group
