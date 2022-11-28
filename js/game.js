@@ -225,6 +225,7 @@ const PLAYER_1_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, BRICK_H);
 const PLAYER_2_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, 224);
 PLAYER_2_GRID.forEach((brick) => {
   brick.tag = "player2";
+  brick.color = "blue";
 });
 p1_bricks = PLAYER_1_GRID.length;
 p2_bricks = PLAYER_2_GRID.length;
