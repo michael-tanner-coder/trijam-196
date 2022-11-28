@@ -1,7 +1,6 @@
 // GAME CONCEPT: 2 player game of breakout - destroy the other player's bricks!
 
 // TODO: nice to have: start menu
-// TODO: nice to have: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
 
 const GAME_W = 240;
@@ -13,7 +12,7 @@ const STATES = {
   in_game: "in_game",
   menu: "menu",
 };
-var game_state = "start";
+var game_state = "menu";
 
 // GRID PROPS
 const BRICK_W = 32;
@@ -314,6 +313,9 @@ const update = (dt) => {
 
   // GAME STATES
   if (game_state === STATES.menu) {
+    if (INPUTS.Enter) {
+      game_state = STATES.start;
+    }
     return;
   }
   if (game_state === STATES.start) {
@@ -421,6 +423,27 @@ const draw = () => {
       reset_text,
       GAME_W / 2 - reset_text_width / 2,
       GAME_H / 2 + 16
+    );
+  }
+
+  if (game_state === STATES.menu) {
+    context.fillStyle = YELLOW;
+    let p1_text = "P1: MOVE WITH A / D";
+    let p1_text_width = context.measureText(p1_text).width;
+    context.fillText(p1_text, GAME_W / 2 - p1_text_width / 2, GAME_H / 2 - 16);
+
+    let p2_text = "P2: MOVE WITH LEFT / RIGHT";
+    let p2_text_width = context.measureText(p2_text).width;
+    context.fillStyle = PURPLE;
+    context.fillText(p2_text, GAME_W / 2 - p2_text_width / 2, GAME_H / 2 + 16);
+
+    let start_text = "PRESS ENTER TO START";
+    let start_text_width = context.measureText(start_text).width;
+    context.fillStyle = PURPLE;
+    context.fillText(
+      start_text,
+      GAME_W / 2 - start_text_width / 2,
+      GAME_H / 2 + 40
     );
   }
 
