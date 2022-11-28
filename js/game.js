@@ -100,6 +100,51 @@ const pickDirection = (obj) => {
   obj.dy = dy;
 };
 
+const gridLogic = (grid) => {
+  grid.forEach((brick) => {
+    if (collisionDetected(BALL, brick)) {
+      hitBrick(BALL, brick);
+    }
+  });
+};
+
+const hitBrick = (ball, brick) => {
+  // bounce collision
+  let ball_center = { x: ball.x + ball.w / 2, y: ball.y + ball.y / 2 };
+  let brick_center = { x: brick.x + brick.w / 2, y: brick.y + brick.h / 2 };
+
+  // left side
+  if (ball.x + ball.w < brick_center.x && ball.y + ball.h < brick.y + brick.h) {
+    ball.dx *= -1;
+  }
+  // right side
+  if (ball.x > brick_center.x && ball.y + ball.h < brick.y + brick.h) {
+    ball.dx *= -1;
+  }
+
+  // front side
+  if (ball.y + ball.h > brick.y + brick.h && ball.x + ball.w < brick.x + brick.w) {
+    ball.dy *= -1;
+  }
+  // back side
+  if (ball.y + ball.h < brick.y + brick.h && ball.x + ball.w < brick.x + brick.w) {
+    ball.dy *= -1;
+  }
+
+  // remove brick
+  let brick_idx = GAME_OBJECTS.indexOf(brick);
+  GAME_OBJECTS.splice(brick_idx, 1);
+};
+
+function collisionDetected(obj_a, obj_b) {
+  return (
+    obj_a.x < obj_b.x + obj_b.w &&
+    obj_a.x + obj_a.w > obj_b.x &&
+    obj_a.y < obj_b.y + obj_b.h &&
+    obj_a.y + obj_a.h > obj_b.y
+  );
+}
+
 // INPUTS
 const INPUTS = {
   // PLAYER 1
@@ -172,8 +217,12 @@ const update = (dt) => {
     }
   });
 
-  // brick group
-  bricks.forEach((brick) => {});
+  // brick groups
+  bricks.forEach((brick) => {
+    if (collisionDetected(BALL, brick)) {
+      hitBrick(BALL, brick);
+    }
+  });
 };
 
 const draw = () => {
