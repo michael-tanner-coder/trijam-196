@@ -1,4 +1,4 @@
-// GAME CONCEPT: 2 player game of breakout: destory the other player's bricks!
+// GAME CONCEPT: 2 player game of breakout: destroy the other player's bricks!
 
 // TODO: game states (start, in-game, win/lose, menu)
 // TODO: start menu
@@ -8,6 +8,14 @@
 
 const GAME_W = 240;
 const GAME_H = 320;
+
+const STATES = {
+  game_over: "game_over",
+  start: "start",
+  in_game: "in_game",
+  menu: "menu",
+};
+var game_state = "start";
 
 // GRID PROPS
 const BRICK_W = 32;
@@ -56,6 +64,9 @@ PLAYER_2.tag = "player2";
 
 PLAYER_1.y = 100;
 PLAYER_2.y = 200 + PLAYER_2.h;
+
+PLAYER_1.x = GAME_W / 2 - PLAYER_1.w / 2;
+PLAYER_2.x = GAME_W / 2 - PLAYER_1.w / 2;
 
 // UTILS
 const genGrid = (brick, rows, cols, start_x = 0, start_y = 0) => {
@@ -190,47 +201,68 @@ const GAME_OBJECTS = [
 
 // LOOP
 const update = (dt) => {
-  // console.log(dt);
-
   // collision groups
   let paddles = GAME_OBJECTS.filter((obj) => obj.type === "paddle");
   let balls = GAME_OBJECTS.filter((obj) => obj.type === "ball");
   let bricks = GAME_OBJECTS.filter((obj) => obj.type === "brick");
 
-  // player group
-  paddles.forEach((paddle) => {
-    // PLAYER MOVEMENT
-    paddle.dx = 0;
+  // GAME STATES
+  if (game_state === STATES.menu) {
+    return;
+  }
+  if (game_state === STATES.start) {
+    // tick timer until the game is ready to start
 
-    movePaddle(paddle);
+    start_timer -= dt;
 
-    paddle.x += paddle.dx;
+    console.log(start_timer);
 
-    if (collisionDetected(BALL, paddle)) {
-      bounceBall(BALL, paddle);
+    if (start_timer <= 0) {
+      game_state = STATES.in_game;
     }
-  });
 
-  // ball group
-  balls.forEach((ball) => {
-    ball.x += ball.dx;
-    ball.y += ball.dy;
+    return;
+  }
+  if (game_state === STATES.in_game) {
+    // player group
+    paddles.forEach((paddle) => {
+      // PLAYER MOVEMENT
+      paddle.dx = 0;
 
-    // wall collision
-    if (ball.x + ball.w > GAME_W || ball.x + ball.w < 0) {
-      ball.dx *= -1;
-    }
-    if (ball.y + ball.w > GAME_H || ball.y + ball.w < 0) {
-      ball.dy *= -1;
-    }
-  });
+      movePaddle(paddle);
 
-  // brick groups
-  bricks.forEach((brick) => {
-    if (collisionDetected(BALL, brick)) {
-      bounceBall(BALL, brick);
-    }
-  });
+      paddle.x += paddle.dx;
+
+      if (collisionDetected(BALL, paddle)) {
+        bounceBall(BALL, paddle);
+      }
+    });
+
+    // ball group
+    balls.forEach((ball) => {
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // wall collision
+      if (ball.x + ball.w > GAME_W || ball.x + ball.w < 0) {
+        ball.dx *= -1;
+      }
+      if (ball.y + ball.w > GAME_H || ball.y + ball.w < 0) {
+        ball.dy *= -1;
+      }
+    });
+
+    // brick groups
+    bricks.forEach((brick) => {
+      if (collisionDetected(BALL, brick)) {
+        bounceBall(BALL, brick);
+      }
+    });
+    return;
+  }
+  if (game_state === STATES.game_over) {
+    return;
+  }
 };
 
 const draw = () => {
