@@ -26,11 +26,13 @@ const PADDING = 4;
 const PADDLE = {
   x: GAME_W / 2,
   y: GAME_H / 2,
+  dx: 0,
   w: 48,
   h: 8,
   color: "white",
   speed: 4,
   type: "paddle",
+  tag: "player1",
 };
 const BALL = {
   x: GAME_W / 2,
@@ -49,6 +51,19 @@ const BRICK = {
   color: "red",
   speed: 0,
   type: "ball",
+};
+
+const INPUTS = {
+  // PLAYER 1
+  ArrowLeft: false,
+  ArrowRight: false,
+
+  // PLAYER 2
+  a: false,
+  d: false,
+
+  // PAUSE/START/QUIT
+  enter: false,
 };
 
 // UTILS
@@ -70,13 +85,59 @@ const genGrid = (brick, rows, cols, start_x = 0, start_y = 0) => {
   return new_grid;
 };
 
+const movePaddle = (paddle) => {
+  // P1
+  if (paddle.tag === "player1") {
+    INPUTS.ArrowRight ? (paddle.dx = paddle.speed) : null;
+    INPUTS.ArrowLeft ? (paddle.dx = -1 * paddle.speed) : null;
+  }
+
+  // P2
+  if (paddle.tag === "player2") {
+    INPUTS.d ? (paddle.dx = paddle.speed) : null;
+    INPUTS.a ? (paddle.dx = -1 * paddle.speed) : null;
+  }
+};
+
+// INPUTS
+window.addEventListener("keydown", function (e) {
+  if (INPUTS[e.key] !== undefined) {
+    INPUTS[e.key] = true;
+    console.log(INPUTS);
+  }
+});
+
+window.addEventListener("keyup", function (e) {
+  if (INPUTS[e.key] !== undefined) {
+    INPUTS[e.key] = false;
+    console.log(INPUTS);
+  }
+});
+
 const PLAYER_1_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, BRICK_H);
 const PLAYER_2_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, 224);
 
 const GAME_OBJECTS = [PADDLE, BALL, ...PLAYER_1_GRID, ...PLAYER_2_GRID];
 
 // LOOP
-const update = () => {};
+const update = (dt) => {
+  // console.log(dt);
+
+  // collision groups
+  let paddles = GAME_OBJECTS.filter((obj) => obj.type === "paddle");
+  let balls = GAME_OBJECTS.filter((obj) => obj.type === "ball");
+  let bricks = GAME_OBJECTS.filter((obj) => obj.type === "brick");
+
+  // player movement
+  paddles.forEach((paddle) => {
+    // PLAYER MOVEMENT
+    paddle.dx = 0;
+
+    movePaddle(paddle);
+
+    paddle.x += paddle.dx;
+  });
+};
 
 const draw = () => {
   context.fillStyle = "black";
@@ -98,7 +159,7 @@ const loop = () => {
   //   inputListener();
 
   while (lag > frame_duration) {
-    update(elapsed);
+    update(elapsed / 1000);
     lag -= 1000 / fps;
     if (lag < 0) lag = 0;
     // releaseInputs();
