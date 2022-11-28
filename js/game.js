@@ -60,6 +60,7 @@ const BRICK = {
 // PLAYERS
 const PLAYER_1 = JSON.parse(JSON.stringify(PADDLE));
 const PLAYER_2 = JSON.parse(JSON.stringify(PADDLE));
+PLAYER_1.tag = "player1";
 PLAYER_2.tag = "player2";
 
 PLAYER_1.y = 100;
@@ -213,7 +214,7 @@ const update = (dt) => {
   if (game_state === STATES.start) {
     // tick timer until the game is ready to start
 
-    start_timer -= dt;
+    start_timer -= 0.02;
 
     console.log(start_timer);
 
@@ -274,6 +275,12 @@ const draw = () => {
     context.fillStyle = obj.color;
     context.fillRect(obj.x, obj.y, obj.w, obj.h);
   });
+
+  // timer
+  if (game_state === STATES.start) {
+    context.fillStyle = "white";
+    context.fillText(Math.floor(start_timer), GAME_W / 2 - 4, GAME_H / 2 - 16);
+  }
 };
 
 const loop = () => {

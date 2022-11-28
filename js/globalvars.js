@@ -8,4 +8,4 @@ var current_time = Date.now();
 var game_timer = 0;
 
 // game vars
-var start_timer = 5;
+var start_timer = 4;
