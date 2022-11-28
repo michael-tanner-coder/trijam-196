@@ -295,6 +295,11 @@ const draw = () => {
     context.fillStyle = "white";
     context.fillText(winner, GAME_W / 2 - 4, GAME_H / 2 - 16);
   }
+
+  // HUD
+  context.fillStyle = "white";
+  context.fillText("P1", 10, 10);
+  context.fillText("P2", GAME_W - 20, GAME_H - 5);
 };
 
 const loop = () => {
