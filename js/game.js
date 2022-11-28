@@ -58,7 +58,6 @@ const genGrid = (brick, rows, cols, start_x = 0, start_y = 0) => {
     for (let j = 0; j < cols; j++) {
       // copy obj template
       let new_brick = JSON.parse(JSON.stringify(brick));
-      console.log(new_brick);
 
       // initial pos
       new_brick.x = start_x + j * new_brick.w + PADDING * j;
