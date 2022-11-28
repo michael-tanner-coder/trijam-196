@@ -3,7 +3,7 @@
 // TODO: nice to have: start menu
 // TODO: nice to have: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
-// TODO: nice to have: trails, screenshake, sound and music
+// TODO: nice to have: trails, screenshake, easing, sound and music
 
 const GAME_W = 240;
 const GAME_H = 320;
@@ -90,17 +90,42 @@ const genGrid = (brick, rows, cols, start_x = 0, start_y = 0) => {
   return new_grid;
 };
 
+function easing(x, target) {
+  return (x += (target - x) * 0.1);
+}
+
+function easingWithRate(x, target, rate, tolerance = 0) {
+  if (tolerance > 0 && x >= target * tolerance) return easing(x, target);
+  return (x += (target - x) * rate);
+}
+
 const movePaddle = (paddle) => {
   // P1
   if (paddle.tag === "player1") {
-    INPUTS.ArrowRight ? (paddle.dx = paddle.speed) : null;
-    INPUTS.ArrowLeft ? (paddle.dx = -1 * paddle.speed) : null;
+    INPUTS.ArrowRight
+      ? (paddle.dx = easingWithRate(paddle.dx, paddle.speed, 0.2))
+      : null;
+    INPUTS.ArrowLeft
+      ? (paddle.dx = easingWithRate(paddle.dx, -1 * paddle.speed, 0.2))
+      : null;
+
+    if (!INPUTS.ArrowRight && !INPUTS.ArrowLeft) {
+      paddle.dx = easingWithRate(paddle.dx, 0, 0.2);
+    }
   }
 
   // P2
   if (paddle.tag === "player2") {
-    INPUTS.d ? (paddle.dx = paddle.speed) : null;
-    INPUTS.a ? (paddle.dx = -1 * paddle.speed) : null;
+    INPUTS.d
+      ? (paddle.dx = easingWithRate(paddle.dx, paddle.speed, 0.2))
+      : null;
+    INPUTS.a
+      ? (paddle.dx = easingWithRate(paddle.dx, -1 * paddle.speed, 0.2))
+      : null;
+
+    if (!INPUTS.d && !INPUTS.a) {
+      paddle.dx = easingWithRate(paddle.dx, 0, 0.2);
+    }
   }
 };
 
@@ -232,11 +257,15 @@ const update = (dt) => {
     // player group
     paddles.forEach((paddle) => {
       // PLAYER MOVEMENT
-      paddle.dx = 0;
+      // paddle.dx = 0;
+      paddle.prev_x = paddle.x;
 
       movePaddle(paddle);
 
       paddle.x += paddle.dx;
+
+      if (paddle.x <= 0) paddle.x = paddle.prev_x;
+      if (paddle.x + paddle.w >= GAME_W) paddle.x = paddle.prev_x;
 
       if (collisionDetected(BALL, paddle)) {
         bounceBall(BALL, paddle);
