@@ -29,7 +29,7 @@ const PADDLE = {
   dx: 0,
   w: 48,
   h: 8,
-  color: "white",
+  color: ORANGE,
   speed: 4,
   type: "paddle",
   tag: "player1",
@@ -41,7 +41,7 @@ const BALL = {
   h: 8,
   dx: 0,
   dy: 0,
-  color: "yellow",
+  color: RED,
   speed: 0.1,
   type: "ball",
   top_speed: 1,
@@ -54,7 +54,7 @@ const BRICK = {
   prev_y: 0,
   w: BRICK_W,
   h: BRICK_H,
-  color: "red",
+  color: YELLOW,
   speed: 0,
   type: "brick",
   tag: "player1",
@@ -65,6 +65,7 @@ const PLAYER_1 = JSON.parse(JSON.stringify(PADDLE));
 const PLAYER_2 = JSON.parse(JSON.stringify(PADDLE));
 PLAYER_1.tag = "player1";
 PLAYER_2.tag = "player2";
+PLAYER_2.color = MID_PURPLE;
 
 PLAYER_1.y = 100;
 PLAYER_2.y = 200 + PLAYER_2.h;
@@ -265,7 +266,7 @@ const PLAYER_1_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, BRICK_H);
 const PLAYER_2_GRID = genGrid(BRICK, ROWS, COLS, BRICK_W / 2, 224);
 PLAYER_2_GRID.forEach((brick) => {
   brick.tag = "player2";
-  brick.color = "blue";
+  brick.color = PURPLE;
 });
 p1_bricks = PLAYER_1_GRID.length;
 p2_bricks = PLAYER_2_GRID.length;
@@ -389,8 +390,10 @@ const update = (dt) => {
 };
 
 const draw = () => {
-  context.fillStyle = "black";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = PURPLE;
+  context.fillRect(0, 0, canvas.width, canvas.height / 2);
+  context.fillStyle = YELLOW;
+  context.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
 
   // render ball trail
   drawTrail(BALL.positions, BALL);
@@ -408,11 +411,12 @@ const draw = () => {
   }
 
   if (game_state === STATES.game_over) {
-    context.fillStyle = "white";
+    context.fillStyle = YELLOW;
     let text_width = context.measureText(winner).width;
     context.fillText(winner, GAME_W / 2 - text_width / 2, GAME_H / 2 - 16);
     let reset_text = "PRESS SPACE TO RESET";
     let reset_text_width = context.measureText(reset_text).width;
+    context.fillStyle = PURPLE;
     context.fillText(
       reset_text,
       GAME_W / 2 - reset_text_width / 2,
