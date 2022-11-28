@@ -1,7 +1,7 @@
-// GAME CONCEPT: 2 player game of breakout: destroy the other player's bricks!
+// GAME CONCEPT: 2 player game of breakout - destroy the other player's bricks!
 
-// TODO: start menu
-// TODO: quit option?
+// TODO: nice to have: start menu
+// TODO: nice to have: quit option?
 // TODO: nice to have: powerup bricks (faster ball, destroy more bricks, exploding bricks, etc)
 // TODO: nice to have: trails, screenshake, sound and music
 
@@ -49,6 +49,8 @@ const BALL = {
 const BRICK = {
   x: GAME_W / 2,
   y: 50,
+  prev_x: 0,
+  prev_y: 0,
   w: BRICK_W,
   h: BRICK_H,
   color: "red",
@@ -118,31 +120,15 @@ const gridLogic = (grid) => {
 };
 
 const bounceBall = (ball, other) => {
-  // bounce collision
-  let ball_center = { x: ball.x + ball.w / 2, y: ball.y + ball.y / 2 };
-  let other_center = { x: other.x + other.w / 2, y: other.y + other.h / 2 };
+  ball.x = ball.prev_x;
+  ball.y = ball.prev_y;
 
-  // left side
-  if (ball.x + ball.w < other_center.x && ball.y + ball.h < other.y + other.h) {
+  // hit side
+  if (ball.x + ball.w < other.x || ball.x > other.x + other.w) {
     ball.dx *= -1;
   }
-  // right side
-  if (ball.x > other_center.x && ball.y + ball.h < other.y + other.h) {
-    ball.dx *= -1;
-  }
-
-  // front side
-  if (
-    ball.y + ball.h > other.y + other.h &&
-    ball.x + ball.w < other.x + other.w
-  ) {
-    ball.dy *= -1;
-  }
-  // back side
-  if (
-    ball.y + ball.h < other.y + other.h &&
-    ball.x + ball.w < other.x + other.w
-  ) {
+  // hit front or back
+  else {
     ball.dy *= -1;
   }
 
@@ -151,9 +137,9 @@ const bounceBall = (ball, other) => {
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
 
-  //
-  if (other.tag === "player1") p1_bricks--;
-  if (other.tag === "player2") p2_bricks--;
+  // reduce brick count
+  if (other.tag === "player1" && other.type === "brick") p1_bricks--;
+  if (other.tag === "player2" && other.type === "brick") p2_bricks--;
 };
 
 function collisionDetected(obj_a, obj_b) {
@@ -257,8 +243,18 @@ const update = (dt) => {
       }
     });
 
+    // brick groups
+    bricks.forEach((brick) => {
+      if (collisionDetected(BALL, brick)) {
+        bounceBall(BALL, brick);
+      }
+    });
+
     // ball group
     balls.forEach((ball) => {
+      ball.prev_x = ball.x;
+      ball.prev_y = ball.y;
+
       ball.x += ball.dx;
       ball.y += ball.dy;
 
@@ -268,13 +264,6 @@ const update = (dt) => {
       }
       if (ball.y + ball.w > GAME_H || ball.y + ball.w < 0) {
         ball.dy *= -1;
-      }
-    });
-
-    // brick groups
-    bricks.forEach((brick) => {
-      if (collisionDetected(BALL, brick)) {
-        bounceBall(BALL, brick);
       }
     });
 
