@@ -186,7 +186,7 @@ const bounceBall = (ball, other) => {
     return;
   }
 
-  // remove other
+  // remove other + shake screen
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
   poof(
@@ -196,6 +196,7 @@ const bounceBall = (ball, other) => {
     1,
     false
   );
+  screenshakesRemaining = HIT_SCREENSHAKES;
 
   // reduce brick count
   if (other.tag === "player1" && other.type === "brick") p1_bricks--;
@@ -253,6 +254,20 @@ function drawTrail(positions, obj) {
     context.fillStyle = "rgba(255, 255, 255, " + ratio / 2 + ")";
     context.fillRect(x, y, w, h);
   });
+}
+
+function updateScreenshake() {
+  if (screenshakesRemaining > 0) {
+    // starts max size and gets smaller
+    let wobble = Math.round(
+      (screenshakesRemaining / HIT_SCREENSHAKES) * SCREENSHAKE_MAX_SIZE
+    );
+    if (screenshakesRemaining % 4 < 2) wobble *= -1; // alternate left/right every 2 frames
+    context.setTransform(1, 0, 0, 1, wobble, 0);
+    screenshakesRemaining--;
+  } else {
+    context.setTransform(1, 0, 0, 1, 0, 0); // reset
+  }
 }
 
 // INPUTS
@@ -398,7 +413,10 @@ const update = (dt) => {
       ball.speed = easing(ball.speed, ball.top_speed);
     });
 
+    updateScreenshake();
+
     checkForWinner();
+
     return;
   }
   if (game_state === STATES.game_over) {

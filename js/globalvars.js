@@ -12,3 +12,4 @@ var start_timer = 4;
 var p1_bricks = 0;
 var p2_bricks = 0;
 var winner = "";
+var screenshakesRemaining = 0;
