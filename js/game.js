@@ -49,6 +49,8 @@ const BALL = {
 const BRICK = {
   x: GAME_W / 2,
   y: 50,
+  dx: 0,
+  dy: 0,
   prev_x: 0,
   prev_y: 0,
   w: BRICK_W,
@@ -149,16 +151,33 @@ const bounceBall = (ball, other) => {
   ball.x = ball.prev_x;
   ball.y = ball.prev_y;
 
-  // hit side
-  if (ball.x + ball.w < other.x || ball.x > other.x + other.w) {
-    ball.dx *= -1;
+  // hit left side
+  if (ball.x + ball.w < other.x) {
+    ball.dx = Math.abs(ball.dx) * -1;
+    // ball.dx *= -1;
   }
-  // hit front or back
+  // hit right side
+  else if (ball.x > other.x + other.w) {
+    ball.dx = Math.abs(ball.dx);
+  }
+  // hit top
+  else if (ball.y + ball.h < other.y) {
+    ball.dy = Math.abs(ball.dy) * -1;
+  }
+  // hit bottom
+  else if (ball.y > other.y + other.h) {
+    ball.dy = Math.abs(ball.dy);
+  }
+  // default
   else {
-    ball.dy *= -1;
+    if (ball.dy > 0) {
+      ball.y -= ball.h;
+    } else if (ball.dy < 0) {
+      ball.y += ball.h;
+    }
   }
 
-  // remove other
+  // if the ball hit a paddle, move the ball faster
   if (other.type === "paddle") {
     ball.top_speed += 0.1;
     if (ball.top_speed > 2) {
@@ -166,6 +185,8 @@ const bounceBall = (ball, other) => {
     }
     return;
   }
+
+  // remove other
   let other_idx = GAME_OBJECTS.indexOf(other);
   GAME_OBJECTS.splice(other_idx, 1);
   poof(
@@ -248,16 +269,13 @@ const INPUTS = {
   Enter: false,
 };
 window.addEventListener("keydown", function (e) {
-  console.log(e);
   if (INPUTS[e.key] !== undefined) {
     INPUTS[e.key] = true;
-    console.log(INPUTS);
   }
 });
 window.addEventListener("keyup", function (e) {
   if (INPUTS[e.key] !== undefined) {
     INPUTS[e.key] = false;
-    console.log(INPUTS);
   }
 });
 
@@ -333,7 +351,6 @@ const update = (dt) => {
     // player group
     paddles.forEach((paddle) => {
       // PLAYER MOVEMENT
-      // paddle.dx = 0;
       paddle.prev_x = paddle.x;
 
       movePaddle(paddle);
@@ -350,6 +367,8 @@ const update = (dt) => {
 
     // brick groups
     bricks.forEach((brick) => {
+      brick.prev_x = brick.x;
+      brick.prev_y = brick.y;
       if (collisionDetected(BALL, brick)) {
         bounceBall(BALL, brick);
       }
